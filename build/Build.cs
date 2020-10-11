@@ -18,7 +18,7 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 [AzurePipelines(
     AzurePipelinesImage.WindowsLatest,
     InvokedTargets = new[] { nameof(Test) },
-    NonEntryTargets = new []{ nameof(Compile), nameof(Restore), nameof(Coverage) })]
+    NonEntryTargets = new []{ nameof(Restore) })]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
@@ -78,24 +78,4 @@ class Build : NukeBuild
                 .ResetVerbosity()
                 .SetResultsDirectory(TestResultDirectory));
         });
-
-    Target Coverage => _ => _
-        .DependsOn(Test)
-        .TriggeredBy(Test)
-        .Consumes(Test)
-        .Produces(CoverageReportArchive)
-        .Executes(() =>
-        {
-            ReportGenerator(_ => _
-                .SetReports(TestResultDirectory / "*.xml")
-                .SetReportTypes(ReportTypes.HtmlInline)
-                .SetTargetDirectory(CoverageReportDirectory)
-                .SetFramework("netcoreapp3.1"));
-            
-            CompressZip(
-                directory: CoverageReportDirectory,
-                archiveFile: CoverageReportArchive,
-                fileMode: FileMode.Create);
-        });
-
 }
