@@ -1,6 +1,7 @@
 using System.IO;
 using Nuke.Common;
 using Nuke.Common.CI;
+using Nuke.Common.CI.AzurePipelines;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
@@ -14,6 +15,9 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
+[AzurePipelines(
+    AzurePipelinesImage.WindowsLatest,
+    InvokedTargets = new[] { nameof(Test) })]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
