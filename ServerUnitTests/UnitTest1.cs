@@ -1,5 +1,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Server.Services;
+using Shouldly;
 
 namespace ServerUnitTests
 {
@@ -7,7 +9,16 @@ namespace ServerUnitTests
     public class UnitTest1
     {
         [TestMethod]
-        public void TestMethod1()
+        [ExpectedException(typeof(ArgumentException))]
+        public void TestMethodException()
+        {
+            var service = new FileSync();
+
+            service.GetFile("");
+        }
+        
+        [TestMethod]
+        public void TestMethodSuccess()
         {
             
         }

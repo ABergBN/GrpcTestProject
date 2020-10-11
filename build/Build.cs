@@ -1,16 +1,16 @@
-using System;
-using System.Linq;
+using System.IO;
 using Nuke.Common;
+using Nuke.Common.CI;
 using Nuke.Common.Execution;
 using Nuke.Common.Git;
+using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
-using Nuke.Common.Tooling;
+using Nuke.Common.Tools.Coverlet;
 using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Utilities.Collections;
-using static Nuke.Common.EnvironmentInfo;
-using static Nuke.Common.IO.FileSystemTasks;
-using static Nuke.Common.IO.PathConstruction;
+using Nuke.Common.Tools.ReportGenerator;
+using static Nuke.Common.IO.CompressionTasks;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
+using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 
 [CheckBuildProjectConfigurations]
 [UnsetVisualStudioEnvironmentVariables]
@@ -29,6 +29,13 @@ class Build : NukeBuild
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
+    
+    AbsolutePath OutputDirectory => RootDirectory / "output";
+    AbsolutePath TestResultDirectory => OutputDirectory / "test-results";
+
+    string CoverageReportDirectory => OutputDirectory / "coverage-report";
+    string CoverageReportArchive => OutputDirectory / "coverage-report.zip";
+
 
     Target Clean => _ => _
         .Before(Restore)
@@ -51,6 +58,39 @@ class Build : NukeBuild
                 .SetProjectFile(Solution)
                 .SetConfiguration(Configuration)
                 .EnableNoRestore());
+        });
+
+    Target Test => _ => _
+        .DependsOn(Compile)
+        .Executes(() =>
+        {
+            DotNetTest(_ => _
+                .SetConfiguration(Configuration)
+                .SetNoBuild(InvokedTargets.Contains(Compile))
+                .EnableCollectCoverage()
+                .SetCoverletOutputFormat(CoverletOutputFormat.cobertura)
+                .SetExcludeByFile("*.Generated.cs")
+                .ResetVerbosity()
+                .SetResultsDirectory(TestResultDirectory));
+        });
+
+    Target Coverage => _ => _
+        .DependsOn(Test)
+        .TriggeredBy(Test)
+        .Consumes(Test)
+        .Produces(CoverageReportArchive)
+        .Executes(() =>
+        {
+            ReportGenerator(_ => _
+                .SetReports(TestResultDirectory / "*.xml")
+                .SetReportTypes(ReportTypes.HtmlInline)
+                .SetTargetDirectory(CoverageReportDirectory)
+                .SetFramework("netcoreapp3.1"));
+            
+            CompressZip(
+                directory: CoverageReportDirectory,
+                archiveFile: CoverageReportArchive,
+                fileMode: FileMode.Create);
         });
 
 }
