@@ -17,6 +17,9 @@
 stages:
   - stage: windows_latest
     displayName: 'windows-latest'
+    variables: {
+      {"Build.Repository.Clean" : "false"}
+    }
     dependsOn: [  ]
     pool:
       vmImage: 'windows-latest'
