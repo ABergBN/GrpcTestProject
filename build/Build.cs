@@ -17,7 +17,8 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 [UnsetVisualStudioEnvironmentVariables]
 [AzurePipelines(
     AzurePipelinesImage.WindowsLatest,
-    InvokedTargets = new[] { nameof(Test) })]
+    InvokedTargets = new[] { nameof(Test) },
+    NonEntryTargets = new []{ nameof(Compile), nameof(Restore), nameof(Coverage) })]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
