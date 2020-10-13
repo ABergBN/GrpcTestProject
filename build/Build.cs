@@ -34,7 +34,9 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 [AzurePipelines(
     AzurePipelinesImage.WindowsLatest,
     InvokedTargets = new[] { nameof(Test), nameof(Compile) },
-    NonEntryTargets = new []{ nameof(Restore) })]
+    NonEntryTargets = new []{ nameof(Restore) }
+    
+)]
 class Build : NukeBuild
 {
     /// Support plugins are available for:
