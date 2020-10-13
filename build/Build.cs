@@ -51,6 +51,8 @@ class Build : NukeBuild
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
 
+    [Partition(2)] readonly Partition TestPartition;
+
     AbsolutePath OutputDirectory => RootDirectory / "output";
     AbsolutePath SourceDirectory => RootDirectory / "source";
     AbsolutePath TestResultDirectory => OutputDirectory / "test-results";
@@ -87,6 +89,7 @@ class Build : NukeBuild
 
     Target Test => _ => _
         .DependsOn(Compile)
+        .Partition(() => TestPartition)
         .Executes(() =>
         {
             DotNetTest(_ => _
