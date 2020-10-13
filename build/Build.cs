@@ -51,8 +51,6 @@ class Build : NukeBuild
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
 
-    [Partition(1)] readonly Partition TestPartition;
-
     AbsolutePath OutputDirectory => RootDirectory / "output";
     AbsolutePath SourceDirectory => RootDirectory / "source";
     AbsolutePath TestResultDirectory => OutputDirectory / "test-results";
@@ -89,16 +87,14 @@ class Build : NukeBuild
 
     Target Test => _ => _
         .DependsOn(Compile)
-        .Partition(() => TestPartition)
         .Produces()
         .Executes(() =>
         {
             var projects = Solution.GetProjects("*Tests");
-            var testProjects = TestPartition.GetCurrent(projects);
+            
             DotNetTest(s => s
                 .SetConfiguration(Configuration)
-                .CombineWith(
-                    testProjects, (_, v) => _
+                .CombineWith(projects, (_, v) => _
                         .SetProjectFile(v)));
         });
 }
