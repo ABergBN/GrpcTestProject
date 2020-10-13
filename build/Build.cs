@@ -90,15 +90,15 @@ class Build : NukeBuild
     Target Test => _ => _
         .DependsOn(Compile)
         .Partition(() => TestPartition)
+        .Produces()
         .Executes(() =>
         {
-            DotNetTest(_ => _
+            var projects = Solution.GetProjects("*.Tests");
+            var relevantProjects = TestPartition.GetCurrent(projects);
+            DotNetTest(s => s
                 .SetConfiguration(Configuration)
-                .SetNoBuild(InvokedTargets.Contains(Compile))
-                .EnableCollectCoverage()
-                .SetCoverletOutputFormat(CoverletOutputFormat.cobertura)
-                .SetExcludeByFile("*.Generated.cs")
-                .ResetVerbosity()
-                .SetResultsDirectory(TestResultDirectory));
+                .CombineWith(
+                    relevantProjects, (cs, v) => cs
+                        .SetProjectFile(v)));
         });
 }
