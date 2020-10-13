@@ -43,7 +43,7 @@ class Build : NukeBuild
     ///   - Microsoft VisualStudio     https://nuke.build/visualstudio
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
-    public static int Main () => Execute<Build>(x => x.Compile);
+    public static int Main () => Execute<Build>(x => x.Test);
 
     [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
     readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
@@ -93,12 +93,12 @@ class Build : NukeBuild
         .Produces()
         .Executes(() =>
         {
-            var projects = Solution.GetProjects("*.Tests");
-            var relevantProjects = TestPartition.GetCurrent(projects);
+            var projects = Solution.GetProjects("*Tests");
+            var testProjects = TestPartition.GetCurrent(projects);
             DotNetTest(s => s
                 .SetConfiguration(Configuration)
                 .CombineWith(
-                    relevantProjects, (cs, v) => cs
+                    testProjects, (_, v) => _
                         .SetProjectFile(v)));
         });
 }
