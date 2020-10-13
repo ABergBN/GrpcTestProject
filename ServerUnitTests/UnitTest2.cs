@@ -7,7 +7,7 @@ using Shouldly;
 namespace ServerUnitTests
 {
     [TestClass]
-    public class UnitTest1
+    public class UnitTest2
     {
         [TestMethod]
         public async Task TestMethodException1()
@@ -90,5 +90,6 @@ namespace ServerUnitTests
 
             await Task.Delay(TimeSpan.FromSeconds(1));
         }
+        
     }
 }
