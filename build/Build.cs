@@ -33,7 +33,7 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 [UnsetVisualStudioEnvironmentVariables]
 [AzurePipelines(
     AzurePipelinesImage.WindowsLatest,
-    InvokedTargets = new[] { nameof(Test) },
+    InvokedTargets = new[] { nameof(Test), nameof(Compile) },
     NonEntryTargets = new []{ nameof(Restore) })]
 class Build : NukeBuild
 {
@@ -51,7 +51,7 @@ class Build : NukeBuild
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
 
-    [Partition(2)] readonly Partition TestPartition;
+    [Partition(1)] readonly Partition TestPartition;
 
     AbsolutePath OutputDirectory => RootDirectory / "output";
     AbsolutePath SourceDirectory => RootDirectory / "source";
