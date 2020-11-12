@@ -48,6 +48,8 @@ class Build : NukeBuild
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
 
+    [CI] readonly AzurePipelines AzurePipelines;
+
     AbsolutePath OutputDirectory => RootDirectory / "output";
     AbsolutePath SourceDirectory => RootDirectory / "source";
     AbsolutePath TestResultDirectory => OutputDirectory / "test-results";
@@ -73,6 +75,8 @@ class Build : NukeBuild
 
     Target Compile => _ => _
         .DependsOn(Restore)
+        .Produces(TestResultDirectory / "*.trx")
+        .Produces(TestResultDirectory / "*.xml")
         .Executes(() =>
         {
             DotNetBuild(s => s
@@ -91,7 +95,15 @@ class Build : NukeBuild
             
             DotNetTest(s => s
                 .SetConfiguration("DEBUG")
+                .SetResultsDirectory(TestResultDirectory)
+                .EnableCollectCoverage()
                 .CombineWith(projects, (_, v) => _
                         .SetProjectFile(v)));
+
+            TestResultDirectory.GlobFiles("*.trx").ForEach(x =>
+                AzurePipelines?.PublishTestResults(
+                    type: AzurePipelinesTestResultsType.VSTest,
+                    title: $"{Path.GetFileNameWithoutExtension(x)} ({AzurePipelines.StageDisplayName})",
+                    files: new string[] { x }));
         });
 }
