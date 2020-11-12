@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Nuke.Common;
@@ -33,9 +32,8 @@ using static Nuke.Common.Tools.ReportGenerator.ReportGeneratorTasks;
 [UnsetVisualStudioEnvironmentVariables]
 [AzurePipelines(
     AzurePipelinesImage.WindowsLatest,
-    InvokedTargets = new[] { nameof(Test), nameof(Compile) },
-    NonEntryTargets = new []{ nameof(Restore) }
-    
+    InvokedTargets = new[] { nameof(Test) },
+    NonEntryTargets = new []{ nameof(Restore), nameof(Compile) }
 )]
 class Build : NukeBuild
 {
@@ -46,9 +44,6 @@ class Build : NukeBuild
     ///   - Microsoft VSCode           https://nuke.build/vscode
 
     public static int Main () => Execute<Build>(x => x.Test);
-
-    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-    readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
 
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
@@ -82,7 +77,7 @@ class Build : NukeBuild
         {
             DotNetBuild(s => s
                 .SetProjectFile(Solution)
-                .SetConfiguration(Configuration)
+                .SetConfiguration("DEBUG")
                 .EnableNoRestore()
                 .SetOutputDirectory(OutputDirectory));
         });
@@ -95,7 +90,7 @@ class Build : NukeBuild
             var projects = Solution.GetProjects("*Tests");
             
             DotNetTest(s => s
-                .SetConfiguration(Configuration)
+                .SetConfiguration("DEBUG")
                 .CombineWith(projects, (_, v) => _
                         .SetProjectFile(v)));
         });
